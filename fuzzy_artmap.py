@@ -42,6 +42,7 @@ class Neuron:
 
 	def update_weights(self, input, beta):
 		self.weights = list(map(lambda x, y: beta * x + (1 - beta) * y, fuzzy_and(input, self.weights), self.weights))
+		#print(self.weights)
 
 	def class_match(self, label):
 		return 1 if self.label == label else 0
@@ -150,8 +151,9 @@ data['class'].replace('p', 0, inplace = True)
 data['class'].replace('e', 1, inplace = True)
 
 # We split data and labels.
-labels = data["class"].values
-data = data.loc[: , ['class']]
+labels = data.loc[: , ['class']]
+data = data.drop(["class"], axis = 1)
+
 
 
 from sklearn.preprocessing import LabelEncoder
@@ -170,17 +172,122 @@ from sklearn.model_selection import train_test_split
 data_train, data_test, labels_train, labels_test = train_test_split(data, labels, test_size = 0.3, random_state = 42)
 data_train = data_train.values
 data_test = data_test.values
-#labels_train = labels_train.values
-#labels_test = labels_test.values
+labels_train = labels_train.values
+labels_test = labels_test.values
 
-# Now we create a fuzzy neural network. We set the vigilance factor to 1, alpha to 0.001, beta to 1 and epsilon to 0.001. We try 3 epochs.
-net = NeuralNetwork(data_train.shape[1], 1, 0.1, 0, 0.001, 1)
+# Now we create a fuzzy neural network. We set the vigilance factor to 1, alpha to 0.001, beta to 1 and epsilon to 0.001. We try 1 epoch.
+net = NeuralNetwork(data_train.shape[1], 1, 0.001, 1, 0.001, 1)
 
 '''
-data_train = data_train[:3]
-labels_train = labels_train[:]
-print(labels_train)'''
+rho = 0
+alpha = 0.001
+beta = 1
+eps = 0.001
 
+data_train = data_train[:100]
+labels_train = labels_train[:100]
+
+Training accuracy:  100.0
+Testing accuracy:  94.99589827727645
+Neurons: 6
+
+rho = 0.25
+Training accuracy:  100.0
+6
+Testing accuracy:  94.99589827727645
+
+rho = 0.5
+Training accuracy:  100.0
+Testing accuracy:  97.33388022969646
+Neurons: 10
+
+rho = 0.75
+Training accuracy:  100.0
+18
+Testing accuracy:  97.00574241181296
+
+rho = 1
+Training accuracy:  100.0
+100
+Testing accuracy:  96.5135356849877
+
+
+1000 samples
+rho = 0
+Training accuracy:  100.0
+7
+Testing accuracy:  99.87694831829369
+
+rho = 0.25
+Training accuracy:  100.0
+9
+Testing accuracy:  99.87694831829369
+
+rho = 0.5
+Training accuracy:  100.0
+16
+Testing accuracy:  99.54881050041017
+
+Training accuracy:  100.0
+26
+Testing accuracy:  99.79491386382281
+
+Training accuracy:  100.0
+1000
+Testing accuracy:  99.79491386382281
+
+
+whole sample
+rho = 0
+Training accuracy:  100.0
+8
+Testing accuracy:  100.0
+
+rho = 0.25
+Training accuracy:  100.0
+10
+Testing accuracy:  100.0
+
+rho = 0.5
+Training accuracy:  100.0
+16
+Testing accuracy:  100.0
+
+rho = 0.75
+Training accuracy:  100.0
+26
+Testing accuracy:  100.0
+
+train = 2500
+rho = 0
+Training accuracy:  100.0
+7
+Testing accuracy:  99.87694831829369
+
+rho = 0.25
+Training accuracy:  100.0
+9
+Testing accuracy:  99.87694831829369
+
+rho = 0.5
+Training accuracy:  100.0
+16
+Testing accuracy:  99.87694831829369
+
+rho = 0.75
+Training accuracy:  100.0
+26
+Testing accuracy:  99.91796554552911
+
+train size = 3500
+Training accuracy:  100.0
+8
+Testing accuracy:  100.0
+
+'''
+'''
+data_train = data_train
+labels_train = labels_train'''
 # We train the network.
 train_labels = net.train(data_train, labels_train)
 count_train_hits = 0
@@ -188,7 +295,13 @@ for i in range(len(labels_train)):
 	if train_labels[i] == labels_train[i]:
 		count_train_hits += 1
 
+# We remove the last uncommitted neuron so it can't be chosen in the test
+if net.neurons[- 1].state == 0:
+	del net.neurons[-1]
+
 print("Training accuracy: ", count_train_hits / len(labels_train) * 100)
+
+print(len(net.neurons))
 
 # We test some data:
 test_labels = net.test(data_test, labels_test)
@@ -198,5 +311,4 @@ for i in range(len(labels_test)):
 		count_test_hits += 1
 
 print("Testing accuracy: ", count_test_hits / len(labels_test) * 100)
-
 

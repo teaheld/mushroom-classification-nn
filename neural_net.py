@@ -27,20 +27,20 @@ labels = data["class"].values
 data = data.drop(["class"], axis = 1)
 
 from sklearn.model_selection import train_test_split
-data_train, data_test, labels_train, labels_test = train_test_split(data, labels, test_size = 0.3)
+data_train, data_test, labels_train, labels_test = train_test_split(data, labels, test_size = 0.3, random_state = 42)
 
 from keras import models
 from keras import layers
 
 model = models.Sequential()
 
-model.add(layers.Dense(16, activation='relu', input_shape=(data_train.shape[1], )))
-model.add(layers.Dense(16, activation='relu'))
-model.add(layers.Dense(1, activation='sigmoid'))
+model.add(layers.Dense(16, activation = 'relu', input_shape = (data_train.shape[1], )))
+model.add(layers.Dense(16, activation = 'relu'))
+model.add(layers.Dense(1, activation = 'sigmoid'))
 
 model.compile(optimizer = 'rmsprop', loss = 'binary_crossentropy', metrics = ['accuracy'])
 
-history = model.fit(data_train,labels_train,epochs=5,batch_size=80)
+history = model.fit(data_train, labels_train, epochs = 5, batch_size = 80)
 
 labels_pred = model.predict(data_test)
 labels_pred = (labels_pred > 0.5)
